@@ -18,7 +18,7 @@ class EncryptionModel extends Observable {
             this.status = "A file must be selected to encrypt";
             announce(null);
         } else {
-            this.status = "";
+            this.status = "The encrypted file, " +saveFile+", has been created";
             announce(null);
             //start encryption here
         }
@@ -38,7 +38,7 @@ class EncryptionModel extends Observable {
             this.status = "A file must be selected to decrypted";
             announce(null);
         } else {
-            this.status = "";
+            this.status = "The decrypted file, " +saveFile+", has been created";
             announce(null);
             //start decryption here
         }
