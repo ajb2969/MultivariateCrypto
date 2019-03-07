@@ -1,3 +1,7 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 import java.util.Observable;
 
 class EncryptionModel extends Observable {
@@ -20,7 +24,29 @@ class EncryptionModel extends Observable {
         } else {
             this.status = "The encrypted file, " +saveFile+", has been created";
             announce(null);
-            //start encryption here
+
+            try {
+                int gf = 127;
+                byte [] file = Files.readAllBytes(Paths.get(selectedFile));
+                IdentityMatrix l1 = new IdentityMatrix(file.length);
+                l1.populate();
+                //multiply message by L1
+                //build graph to transform y -> z
+                IdentityMatrix l2 = new IdentityMatrix(file.length);
+                l2.populate();
+                //multiply z by L2 and you will get cipher text
+            } catch (NoSuchFileException e) {
+                this.status = String.format("Error: " +
+                        "%s does not exist", e.getFile() );
+                announce(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+
+
+
         }
 
 
