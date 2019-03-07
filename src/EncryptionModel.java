@@ -30,17 +30,20 @@ class EncryptionModel extends Observable {
             announce(null);
 
             try {
-                int gf = 127;
                 byte [] file = Files.readAllBytes(Paths.get(selectedFile));
                 selectedFile = selectedFile.substring(0, selectedFile
                         .lastIndexOf("/"));
                 IdentityMatrix l1 = new IdentityMatrix(file.length);
                 byte [] afterl1 = l1.convertAndMultiply(file);
-                
+
+
+
+                CentralMap cm = new CentralMap(password.getBytes(), afterl1);
+
                 //build graph to transform y -> z
 
                 IdentityMatrix l2 = new IdentityMatrix(file.length);
-                byte [] ciphertext = l2.convertAndMultiply(afterl1);
+                byte [] ciphertext = l2.convertAndMultiply(cm.encrypt());
                 writeFile(selectedFile, "/" + saveFile, ciphertext);
             } catch (NoSuchFileException e) {
                 this.status = String.format("Error: " +
