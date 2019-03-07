@@ -1,7 +1,11 @@
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Observable;
 
 class EncryptionModel extends Observable {
@@ -28,13 +32,16 @@ class EncryptionModel extends Observable {
             try {
                 int gf = 127;
                 byte [] file = Files.readAllBytes(Paths.get(selectedFile));
+                selectedFile = selectedFile.substring(0, selectedFile
+                        .lastIndexOf("/"));
                 IdentityMatrix l1 = new IdentityMatrix(file.length);
-                l1.populate();
-                //multiply message by L1
+                byte [] afterl1 = l1.convertAndMultiply(file);
+                
                 //build graph to transform y -> z
+
                 IdentityMatrix l2 = new IdentityMatrix(file.length);
-                l2.populate();
-                //multiply z by L2 and you will get cipher text
+                byte [] ciphertext = l2.convertAndMultiply(afterl1);
+                writeFile(selectedFile, "/" + saveFile, ciphertext);
             } catch (NoSuchFileException e) {
                 this.status = String.format("Error: " +
                         "%s does not exist", e.getFile() );
@@ -42,14 +49,7 @@ class EncryptionModel extends Observable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
-
-
-
         }
-
-
     }
 
 
@@ -72,6 +72,21 @@ class EncryptionModel extends Observable {
 
     String getStatus() {
         return this.status;
+    }
+
+    private void writeFile(
+            String directoryPath,
+            String filePath,
+            byte [] str_output)
+            throws FileNotFoundException, UnsupportedEncodingException {
+
+        PrintWriter output = new PrintWriter(directoryPath + filePath, "UTF-8");
+        for (byte b:
+             str_output) {
+            output.write((char) b);
+        }
+        output.flush();
+
     }
 
     public void announce(String arg) {
