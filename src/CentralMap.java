@@ -8,9 +8,9 @@ public class CentralMap {
     public CentralMap(byte [] password, byte [] plaintext) {
         this.password = password;
         this.plaintext = plaintext;
-        this.lines = new Line[this.password.length];
-        this.points = new Point[this.password.length];
-
+        this.lines = new Line[this.plaintext.length];
+        this.points = new Point[this.plaintext.length];
+        init();
     }
 
     private void init() {
@@ -40,7 +40,7 @@ public class CentralMap {
                                             this.lines[1].getB()) %
                                             this.GALOIS_FIELD)
                 );
-                for(int j = 3; j < this.password.length; j++) {
+                for(int j = 3; j < this.plaintext.length; j++) {
                     if(j % 4 == 3 || j % 4 == 2)
                         this.lines[j] = new Line((byte)((this.points[j].getB() +
                                                     this.points[0].getB() *
@@ -70,7 +70,7 @@ public class CentralMap {
                                                    this.lines[1].getB()) %
                                                    this.GALOIS_FIELD)
                 );
-                for(int j = 3; j < this.password.length; j++) {
+                for(int j = 3; j < this.plaintext.length; j++) {
                     if(j % 4 == 3 || j % 4 == 2)
                         this.points[j] = new Point((byte)(
                                 (this.lines[j].getB() -
