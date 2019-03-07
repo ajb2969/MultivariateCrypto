@@ -35,13 +35,7 @@ class EncryptionModel extends Observable {
                         .lastIndexOf("/"));
                 IdentityMatrix l1 = new IdentityMatrix(file.length);
                 byte [] afterl1 = l1.convertAndMultiply(file);
-
-
-
                 CentralMap cm = new CentralMap(password.getBytes(), afterl1);
-
-                //build graph to transform y -> z
-
                 IdentityMatrix l2 = new IdentityMatrix(file.length);
                 byte [] ciphertext = l2.convertAndMultiply(cm.encrypt());
                 writeFile(selectedFile, "/" + saveFile, ciphertext);
@@ -69,7 +63,24 @@ class EncryptionModel extends Observable {
         } else {
             this.status = "The decrypted file, " +saveFile+", has been created";
             announce(null);
-            //start decryption here
+
+            try {
+                byte [] file = Files.readAllBytes(Paths.get(selectedFile));
+                selectedFile = selectedFile.substring(0, selectedFile
+                        .lastIndexOf("/"));
+                IdentityMatrix l2 = new IdentityMatrix(file.length);
+                byte [] afterl2 = l2.convertAndMultiply(file);
+                CentralMap cm = new CentralMap(password.getBytes(), afterl2);
+                IdentityMatrix l1 = new IdentityMatrix(file.length);
+                byte [] plaintext = l1.convertAndMultiply(cm.decrypt());
+                writeFile(selectedFile, "/" + saveFile, plaintext);
+            } catch (NoSuchFileException e) {
+                this.status = String.format("Error: " +
+                        "%s does not exist", e.getFile() );
+                announce(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
