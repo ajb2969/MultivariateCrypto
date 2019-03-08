@@ -1,229 +1,109 @@
 public class CentralMap {
 
-    private byte [] password;
-    private byte [] plaintext;
-    final int GALOIS_FIELD = 127;
-    Line [] lines;
-    Point [] points;
-    public CentralMap(byte [] password, byte [] plaintext) {
-        this.password = password;
-        this.plaintext = plaintext;
-        this.lines = new Line[this.plaintext.length];
-        this.points = new Point[this.plaintext.length];
-        init();
-    }
+  private short[] password;
+  private short[] plaintext;
+  static final int GALOISFIELD = 127;
+  Line[] lines;
+  Point[] points;
 
-    private void init() {
-        for(int i = 0; i < plaintext.length; i++) {
-            this.lines[i] = new Line(this.plaintext[i]);
-            this.points[i] = new Point(this.plaintext[i]);
-        }
+  public CentralMap(byte[] password, short[] plaintext) {
+    short[] convPassword = new short[password.length];
+    int ind = 0;
+    for (byte i : password) {
+      convPassword[ind] = i;
+      ind++;
     }
+    this.password = convPassword;
 
-    public byte [] decrypt() {
-        for(int i = password.length -1; i >=0; i--) {
-            if((i + 1) % 2 == 0) {
-                this.lines[0] = new Line(
-                        (byte)((this.points[0].getB() -
-                                this.password[i]) %
-                                GALOIS_FIELD)
-                );
-                this.lines[1] = new Line(
-                        (byte) ((this.points[1].getB() +
-                                this.points[0].getB() *
-                                this.lines[0].getB()) %
-                                this.GALOIS_FIELD)
-                );
-                this.lines[2] = new Line((byte)((this.points[2].getB() +
-                        this.points[0].getB() *
-                        this.lines[1].getB()) %
-                        this.GALOIS_FIELD)
-                );
-                for(int j = 3; j < this.plaintext.length; j++) {
-                    if(j % 4 == 3 || j % 4 == 2)
-                        this.lines[j] = new Line((byte)((this.points[j].getB() +
-                                this.points[0].getB() *
-                                this.lines[j - 2].getB()) %
-                                GALOIS_FIELD)
-                        );
-                    else
-                        this.lines[j] = new Line((byte)((this.points[j].getB() +
-                                                        this.points[j-2].getB() *
-                                                        this.lines[0].getB()) %
-                                                        GALOIS_FIELD));
-                }
-            } else {
-                this.points[0] = new Point(
-                        (byte)((this.lines[0].getB() -
-                                this.password[i]) %
-                                GALOIS_FIELD)
-                );
-                this.points[1] = new Point(
-                        (byte) ((this.lines[1].getB() -
-                                this.points[0].getB() *
-                                        this.lines[0].getB()) %
-                                this.GALOIS_FIELD)
-                );
-                this.points[2] = new Point((byte)((this.points[2].getB() -
-                        this.points[0].getB() *
-                                this.lines[1].getB()) %
-                        this.GALOIS_FIELD)
-                );
-                for(int j = 3; j < this.plaintext.length; j++) {
-                    if(j % 4 == 3 || j % 4 == 2)
-                        this.points[j] = new Point((byte)(
-                                (this.lines[j].getB() -
-                                        this.points[0].getB() *
-                                                this.lines[j - 2].getB()) %
-                                        GALOIS_FIELD)
-                        );
-                    else
-                        this.points[j] = new Point((byte)(
-                                (this.lines[j].getB() -
-                                        this.points[j-2].getB() *
-                                                this.lines[0].getB()) %
-                                        GALOIS_FIELD)
-                        );
-                }
-            }
-        }
-        if(this.password.length % 2 == 0) {
-            byte [] plaintext = new byte[this.points.length];
-            int i = 0;
-            for (Point p:
-                    this.points) {
-                plaintext[i] = p.getB();
-                i++;
-            }
-            return plaintext;
-        } else {
-            byte[] plaintext = new byte[this.lines.length];
-            int i = 0;
-            for (Line p :
-                    this.lines) {
-                plaintext[i] = p.getB();
-                i++;
-            }
-            return plaintext;
-        }
-    }
+    this.plaintext = plaintext;
+    this.lines = new Line[this.plaintext.length];
+    this.points = new Point[this.plaintext.length];
+    init();
+  }
 
-    public byte [] encrypt() {
-        //Always start with lines
-        for(int i = 0; i< password.length; i++) {
-            if(i % 2 == 0) {
-                this.lines[0] = new Line(
-                        (byte)((this.points[0].getB() +
-                                this.password[i]) %
-                                GALOIS_FIELD)
-                );
-                this.lines[1] = new Line(
-                        (byte) ((this.points[1].getB() +
-                                 this.points[0].getB() *
-                                 this.lines[0].getB()) %
-                                 this.GALOIS_FIELD)
-                );
-                this.lines[2] = new Line((byte)((this.points[2].getB() +
-                                            this.points[0].getB() *
-                                            this.lines[1].getB()) %
-                                            this.GALOIS_FIELD)
-                );
-                for(int j = 3; j < this.plaintext.length; j++) {
-                    if(j % 4 == 3 || j % 4 == 2)
-                        this.lines[j] = new Line((byte)((this.points[j].getB() +
-                                                    this.points[0].getB() *
-                                                    this.lines[j - 2].getB()) %
-                                                    GALOIS_FIELD)
-                        );
-                    else
-                        this.lines[j] = new Line((byte)((this.points[j].getB() +
-                                                        this.points[j-2].getB() *
-                                                        this.lines[0].getB()) %
-                                                        GALOIS_FIELD));
-                }
-            } else {
-                this.points[0] = new Point(
-                        (byte)((this.lines[0].getB() +
-                                this.password[i]) %
-                                GALOIS_FIELD)
-                );
-                this.points[1] = new Point(
-                        (byte) ((this.lines[1].getB() -
-                                this.points[0].getB() *
-                                this.lines[0].getB()) %
-                                this.GALOIS_FIELD)
-                );
-                this.points[2] = new Point((byte)((this.points[2].getB() -
-                                                   this.points[0].getB() *
-                                                   this.lines[1].getB()) %
-                                                   this.GALOIS_FIELD)
-                );
-                for(int j = 3; j < this.plaintext.length; j++) {
-                    if(j % 4 == 3 || j % 4 == 2)
-                        this.points[j] = new Point((byte)(
-                                (this.lines[j].getB() -
-                                 this.points[0].getB() *
-                                 this.lines[j - 2].getB()) %
-                                 GALOIS_FIELD)
-                        );
-                    else
-                        this.points[j] = new Point((byte)(
-                                (this.lines[j].getB() -
-                                 this.points[j-2].getB() *
-                                 this.lines[0].getB()) %
-                                 GALOIS_FIELD)
-                        );
-                }
-            }
-        }
-        if(this.password.length % 2 == 0) {
-            byte [] ciphertext = new byte[this.points.length];
-            int i = 0;
-            for (Point p:
-                 this.points) {
-                ciphertext[i] = p.getB();
-                i++;
-            }
-            return ciphertext;
-        } else {
-            byte [] ciphertext = new byte[this.lines.length];
-            int i = 0;
-            for (Line p:
-                    this.lines) {
-                ciphertext[i] = p.getB();
-                i++;
-            }
-            return ciphertext;
-        }
+  private void init() {
+    for (int i = 0; i < plaintext.length; i++) {
+      this.lines[i] = new Line(this.plaintext[i]);
+      this.points[i] = new Point(this.plaintext[i]);
     }
+  }
+
+  public short[] decrypt() {
+    for(int i = password.length -1; i>=0; i--) {
+      
+    }
+    return new short[password[0]];
+  }
+
+  public short[] encrypt() {
+    // Always start with lines
+    //turnary to handle how java does modulus -8783 % GALOISFIELD == -20 instead of 107
+    int returnVal = 0;
+    for (int i = 0; i < this.password.length; i++) {
+      if (i % 2 == 0) {
+        short l0 = (short) (points[0].getB() + password[i]);
+        lines[0] =
+            new Line((short) ((l0 % GALOISFIELD) + ((l0 % GALOISFIELD) < 0 ? GALOISFIELD : 0)));
+        short l1 = (short) (points[1].getB() + points[0].getB() * lines[0].getB());
+        lines[1] =
+            new Line((short) ((l1 % GALOISFIELD) + ((l1 % GALOISFIELD) < 0 ? GALOISFIELD : 0)));
+        short l2 = (short) (points[2].getB() + points[0].getB() * lines[1].getB());
+        lines[2] =
+            new Line((short) ((l2 % GALOISFIELD) + ((l2 % GALOISFIELD) < 0 ? GALOISFIELD : 0)));
+        returnVal = 0;
+      } else {
+        short p0 = (short) (lines[0].getB() + password[i]);
+        points[0] =
+            new Point((short) ((p0 % GALOISFIELD) + ((p0 % GALOISFIELD) < 0 ? GALOISFIELD : 0)));
+        short p1 = (short) (lines[1].getB() - points[0].getB() * lines[0].getB());
+        points[1] =
+            new Point((short) ((p1 % GALOISFIELD) + ((p1 % GALOISFIELD) < 0 ? GALOISFIELD : 0)));
+        short p2 = (short) (lines[2].getB() - points[0].getB() * lines[1].getB());
+        points[2] =
+            new Point((short) ((p2 % GALOISFIELD) + ((p2 % GALOISFIELD) < 0 ? GALOISFIELD : 0)));
+        returnVal = 1;
+      }
+    }
+    if (returnVal == 0) {
+      short[] returnArray = new short[lines.length];
+      for (int counter = 0; counter < lines.length; counter++) {
+        returnArray[counter] = lines[counter].getB();
+      }
+      return returnArray;
+    } else {
+      short[] returnArray = new short[points.length];
+      for (int counter = 0; counter < points.length; counter++) {
+        returnArray[counter] = points[counter].getB();
+      }
+      return returnArray;
+    }
+  }
 }
 
 class Line {
-    private byte b;
-    public Line(byte b) {
-        this.b = b;
-    }
+  private short b;
 
-    public void setB(byte b) {
-        this.b = b;
-    }
+  public Line(short b) {
+    this.b = b;
+  }
 
-    public byte getB() {
-        return b;
-    }
+  public void setB(short b) {
+    this.b = b;
+  }
+
+  public short getB() {
+    return b;
+  }
 }
 
 class Point {
-    private byte b;
-    public Point(byte b) {
-        this.b = b;
-    }
+  private short b;
 
-    public void setB(byte b) {
-        this.b = b;
-    }
+  public Point(short b) {
+    this.b = b;
+  }
 
-    public byte getB() {
-        return b;
-    }
+  public short getB() {
+    return b;
+  }
 }
