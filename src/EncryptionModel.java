@@ -76,7 +76,7 @@ class EncryptionModel extends Observable {
         IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
         short[] afterl2 = l2.convertAndMultiply(fileBytes);
         CentralMap cm = new CentralMap(password.getBytes(), afterl2);
-        short[] ciphertext = l1.convertAndMultiply(cm.decrypt());
+        short[] ciphertext = l1.convertAndMultiply(cm.decrypt() );
         writeFile(selectedFile, "/" + saveFile, ciphertext);
       } catch (NoSuchFileException e) {
         this.status = String.format("Error: " + "%s does not exist", e.getFile());
