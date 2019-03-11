@@ -64,15 +64,7 @@ public class CentralMap {
         lines[1] = new Line(modulus(l1, GALOISFIELD));
         int l2 = (points[2].getB() + points[0].getB() * lines[1].getB());
         lines[2] = new Line(modulus(l2, GALOISFIELD));
-        for (int j = 3; j < this.plaintext.length; j++) {
-          if ((modulus(j, (short)4) == 3) || (modulus(j, (short)4) == 2)) {
-            int lj = (points[j].getB() * points[0].getB() * lines[j - 1].getB());
-            lines[j] = new Line(modulus(lj, GALOISFIELD));
-          } else {
-            int lj = (points[j].getB() + points[j - 1].getB() * lines[0].getB());
-            lines[j] = new Line(modulus(lj, GALOISFIELD));
-          }
-        }
+        cryptIfForLoop();
         r = 1;
         returnVal = 0;
       } else {
@@ -82,7 +74,7 @@ public class CentralMap {
         points[1] = new Point(modulus(p1, GALOISFIELD));
         int p2 = (lines[2].getB() - points[0].getB() * lines[1].getB());
         points[2] = new Point(modulus(p2, GALOISFIELD));
-        cryptForLoop();
+        cryptElseForLoop();
         r = 0;
         returnVal = 1;
       }
@@ -102,15 +94,7 @@ public class CentralMap {
         lines[1] = new Line(modulus(l1, GALOISFIELD));
         int l2 = (points[2].getB() + points[0].getB() * lines[1].getB());
         lines[2] = new Line(modulus(l2, GALOISFIELD));
-        for (int j = 3; j < this.plaintext.length; j++) {
-          if ((modulus(j, (short)4) == 3) || (modulus(j, (short)4) == 2)) {
-            int lj = (points[j].getB() + points[0].getB() * lines[j - 1].getB());
-            lines[j] = new Line(modulus(lj, GALOISFIELD));
-          } else {
-            int lj = (points[j].getB() + points[j - 1].getB() * lines[0].getB());
-            lines[j] = new Line(modulus(lj, GALOISFIELD));
-          }
-        }
+        cryptIfForLoop();
         returnVal = 0;
       } else {
         int p0 = (lines[0].getB() + password[i]);
@@ -119,16 +103,28 @@ public class CentralMap {
         points[1] = new Point(modulus(p1, GALOISFIELD));
         int p2 = (lines[2].getB() - points[0].getB() * lines[1].getB());
         points[2] = new Point(modulus(p2, GALOISFIELD));
-        cryptForLoop();
+        cryptElseForLoop();
         returnVal = 1;
       }
     }
     return print(returnVal);
   }
 
-  private void cryptForLoop() {
+  private void cryptIfForLoop() {
     for (int j = 3; j < this.plaintext.length; j++) {
-      if ((modulus(j, (short)4) == 3) || (modulus(j, (short)4) == 2)) {
+      if ((modulus((j + 1), (short) 4) == 3) || (modulus((j + 1), (short) 4) == 2)) {
+        int lj = (points[j].getB() + points[0].getB() * lines[j - 1].getB());
+        lines[j] = new Line(modulus(lj, GALOISFIELD));
+      } else {
+        int lj = (points[j].getB() + points[j - 1].getB() * lines[0].getB());
+        lines[j] = new Line(modulus(lj, GALOISFIELD));
+      }
+    }
+  }
+
+  private void cryptElseForLoop() {
+    for (int j = 3; j < this.plaintext.length; j++) {
+      if ((modulus((j + 1), (short) 4) == 3) || (modulus((j + 1), (short) 4) == 2)) {
         int pj = (lines[j].getB() - points[0].getB() * lines[j - 1].getB());
         points[j] = new Point(modulus(pj, GALOISFIELD));
       } else {
