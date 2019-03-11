@@ -1,33 +1,29 @@
 public class IdentityMatrix {
-  private short[][] ba;
+  private long size;
 
-  public IdentityMatrix(int i) {
-    this.ba = new short[i][i];
-    this.populate();
+  IdentityMatrix(int i) {
+    this.size = i;
   }
 
-  public void populate() {
-    for (int i = 0; i < ba.length; i++) {
-      this.ba[i][i] = (short) 1;
-    }
-  }
-
-  public short[] convertAndMultiply(short[] message) {
-    short[][] convertCol = new short[message.length][1];
+  public byte[] convertAndMultiply(short[] message) {
+    byte[][] convertCol = new byte[message.length][1];
     for (int j = 0; j < message.length; j++) {
-      convertCol[j][0] = message[j];
+      convertCol[j][0] = (byte) message[j];
     }
 
-    short[][] product = new short[this.ba.length][1];
+    byte[][] product = new byte[Integer.valueOf(Long.toString(this.size))][1];
     // iterates through each row in identity matrix
-    for (int i = 0; i < this.ba.length; i++) {
+    for (long i = 0; i < size; i++) {
       // goes through each column in identity matrix
-      for (int j = 0; j < this.ba[0].length; j++) {
-        product[j][0] += this.ba[i][j] * convertCol[j][0];
+      for (long j = 0; j < size; j++) {
+        if (i == j) {
+          product[Integer.valueOf(Long.toString(j))][0] +=
+              convertCol[Integer.valueOf(Long.toString(j))][0];
+        }
       }
     }
 
-    short[] afterProduct = new short[message.length];
+    byte[] afterProduct = new byte[message.length];
     for (int j = 0; j < message.length; j++) {
       afterProduct[j] = product[j][0];
     }

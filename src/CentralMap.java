@@ -1,12 +1,12 @@
 public class CentralMap {
 
   private short[] password;
-  private short[] plaintext;
+  private byte[] plaintext;
   private static final short GALOISFIELD = 127;
   private Line[] lines;
   private Point[] points;
 
-  CentralMap(byte[] password, short[] plaintext) {
+  CentralMap(byte[] password, byte[] plaintext) {
     short[] convPassword = new short[password.length];
     int ind = 0;
     for (byte i : password) {

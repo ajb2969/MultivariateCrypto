@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 class EncryptionModel extends Observable {
   private String status;
 
-  public EncryptionModel() {
+  EncryptionModel() {
     this.status = "";
   }
 
@@ -38,9 +38,9 @@ class EncryptionModel extends Observable {
         selectedFile = selectedFile.substring(0, selectedFile.lastIndexOf('/'));
         IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
         IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
-        short[] afterl1 = l1.convertAndMultiply(fileBytes);
+        byte[] afterl1 = l1.convertAndMultiply(fileBytes);
         CentralMap cm = new CentralMap(password.getBytes(), afterl1);
-        short[] ciphertext = l2.convertAndMultiply(cm.encrypt());
+        byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
         writeFile(selectedFile, "/" + saveFile, ciphertext);
       } catch (NoSuchFileException e) {
         this.status = String.format("Error: " + "%s does not exist", e.getFile());
@@ -74,9 +74,9 @@ class EncryptionModel extends Observable {
         selectedFile = selectedFile.substring(0, selectedFile.lastIndexOf('/'));
         IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
         IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
-        short[] afterl2 = l2.convertAndMultiply(fileBytes);
+        byte[] afterl2 = l2.convertAndMultiply(fileBytes);
         CentralMap cm = new CentralMap(password.getBytes(), afterl2);
-        short[] ciphertext = l1.convertAndMultiply(cm.decrypt());
+        byte[] ciphertext = l1.convertAndMultiply(cm.decrypt());
         writeFile(selectedFile, "/" + saveFile, ciphertext);
       } catch (NoSuchFileException e) {
         this.status = String.format("Error: " + "%s does not exist", e.getFile());
@@ -91,7 +91,7 @@ class EncryptionModel extends Observable {
     return this.status;
   }
 
-  private void writeFile(String directoryPath, String filePath, short[] strOutput) {
+  private void writeFile(String directoryPath, String filePath, byte[] strOutput) {
 
     try (PrintWriter output = new PrintWriter(directoryPath + filePath, "UTF-8")) {
       for (short b : strOutput) {
