@@ -6,16 +6,18 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.Observable;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 class EncryptionModel extends Observable {
   private String status;
+  private static final String ERRORMSG = "Error: %s, %s is too big. ";
 
   EncryptionModel() {
     this.status = "";
   }
 
-  void encrypt(String selectedFile, String password, String saveFile) {
+  void crypt(String selectedFile, String password, String saveFile, byte flag) {
     if (saveFile.equals("")) {
       this.status = "A save file name must be entered";
       announce(null);
@@ -38,53 +40,66 @@ class EncryptionModel extends Observable {
         selectedFile = selectedFile.substring(0, selectedFile.lastIndexOf('/'));
         IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
         IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
-        byte[] afterl1 = l1.convertAndMultiply(fileBytes);
-        CentralMap cm = new CentralMap(password.getBytes(), afterl1);
-        byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
+        byte[] afterl2 = l2.convertAndMultiply(fileBytes);
+        CentralMap cm = new CentralMap(password.getBytes(), afterl2);
+        byte [] ciphertext;
+        if(flag == 0) {
+          ciphertext = l1.convertAndMultiply(cm.encrypt());
+        } else {
+          ciphertext = l1.convertAndMultiply(cm.decrypt());
+        }
+
         writeFile(selectedFile, "/" + saveFile, ciphertext);
       } catch (NoSuchFileException e) {
         this.status = String.format("Error: " + "%s does not exist", e.getFile());
         announce(null);
       } catch (IOException e) {
         Logger.getAnonymousLogger().severe(e.getMessage());
+      } catch (OutOfMemoryError e) {
+        this.status = String.format(ERRORMSG, e.getCause(), e.getMessage());
+        announce(null);
       }
+      announce(null);
     }
   }
 
-  void decrypt(String selectedFile, String password, String saveFile) {
-    if (saveFile.equals("")) {
-      this.status = "A save file name must be entered";
-      announce(null);
-    } else if (password.equals("")) {
-      this.status = "A password must be entered in order to decrypt";
-      announce(null);
-    } else if (selectedFile.equals("")) {
-      this.status = "A file must be selected to decrypted";
-      announce(null);
-    } else {
-      this.status = "The decrypted file, " + saveFile + ", has been created";
-      announce(null);
+  public TreeSet<LetterFrequency> openLetterFreq(String selectedFile, String password) {
+    System.out.println("Called letter frequency");
+    /*
+     try {
+       byte[] file = Files.readAllBytes(Paths.get(selectedFile));
+       short[] fileBytes = new short[file.length];
+       for (int i = 0; i < file.length; i++) {
+         fileBytes[i] = file[i];
+       }
+       IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
+       IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
+       byte[] afterl1 = l1.convertAndMultiply(fileBytes);
+       CentralMap cm = new CentralMap(password.getBytes(), afterl1);
+       byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
+       Frequency freq = new Frequency(file, ciphertext);
+       return new TreeSet<>(freq.getFrequencies());
+     } catch (NoSuchFileException e) {
+       this.status = String.format("Error: %s does not exist", e.getFile());
+       announce(null);
+     } catch (IOException e) {
+       Logger.getAnonymousLogger().severe(e.getMessage());
+     } catch (OutOfMemoryError e) {
+       this.status = String.format(ERRORMSG, e.getCause(), e.getMessage());
+       announce(null);
+     }
+    */
+    return new TreeSet<>();
+  }
 
-      try {
-        byte[] file = Files.readAllBytes(Paths.get(selectedFile));
-        short[] fileBytes = new short[file.length];
-        for (int i = 0; i < file.length; i++) {
-          fileBytes[i] = file[i];
-        }
-        selectedFile = selectedFile.substring(0, selectedFile.lastIndexOf('/'));
-        IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
-        IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
-        byte[] afterl2 = l2.convertAndMultiply(fileBytes);
-        CentralMap cm = new CentralMap(password.getBytes(), afterl2);
-        byte[] ciphertext = l1.convertAndMultiply(cm.decrypt());
-        writeFile(selectedFile, "/" + saveFile, ciphertext);
-      } catch (NoSuchFileException e) {
-        this.status = String.format("Error: " + "%s does not exist", e.getFile());
-        announce(null);
-      } catch (IOException e) {
-        Logger.getAnonymousLogger().severe(e.getMessage());
-      }
-    }
+  public TreeSet<Percentage> cipherChanges(String selectedFile, String password) {
+    System.out.println("Called cipherChanges");
+    return new TreeSet<>();
+  }
+
+  public TreeSet<Percentage> passwordChanges(String selectedFile, String password) {
+    System.out.println("Called passwordChanges");
+    return new TreeSet<>();
   }
 
   String getStatus() {

@@ -16,11 +16,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application implements Observer {
   private EncryptionModel model;
-  private HBox top, midtop, midbot, bottom;
-  private Label file_lbl, passwd_lbl, status;
-  private HBox cont_file;
-  private TextField file_name;
-  private Button file_chooser;
+  private Label status;
 
   @Override
   public void update(Observable o, Object arg) {
@@ -28,83 +24,94 @@ public class Main extends Application implements Observer {
   }
 
   @Override
-  public void start(Stage primaryStage) throws Exception {
-
-    top = new HBox();
+  public void start(Stage primaryStage) {
+    TextField fileName;
+    HBox top = new HBox();
     top.setSpacing(7);
     top.setPadding(new Insets(10, 10, 10, 10));
     // handles file choosing
-    file_lbl = new Label("Choose file");
-    cont_file = new HBox();
-    file_name = new TextField();
-    file_name.setText("");
+    Label fileLbl = new Label("Choose file");
+    HBox contFile = new HBox();
+    fileName = new TextField();
+    fileName.setText("");
 
-    file_chooser = new Button();
-    file_chooser.setOnAction(
+    Button fileChooser = new Button();
+    fileChooser.setOnAction(
         e -> {
-          FileChooser fileChooser = new FileChooser();
-          fileChooser.setTitle("Select file to encrypt");
-          File file = fileChooser.showOpenDialog(primaryStage);
+          FileChooser fChooser = new FileChooser();
+          fChooser.setTitle("Select file to encrypt");
+          File file = fChooser.showOpenDialog(primaryStage);
           if (file != null) {
-            file_name.setText(file.getAbsolutePath());
+            fileName.setText(file.getAbsolutePath());
             model.announce(null);
           }
         });
-    cont_file.getChildren().addAll(file_name, file_chooser);
-    top.getChildren().addAll(file_lbl, cont_file);
+    contFile.getChildren().addAll(fileName, fileChooser);
+    top.getChildren().addAll(fileLbl, contFile);
 
     // handles password
-    midtop = new HBox();
+    HBox midtop = new HBox();
     midtop.setSpacing(7);
     midtop.setPadding(new Insets(10, 10, 10, 10));
-    passwd_lbl = new Label("Password");
-    PasswordField password_field = new PasswordField();
-    password_field.setText("");
-    midtop.getChildren().addAll(passwd_lbl, password_field);
+    Label passwdLbl = new Label("Password");
+    PasswordField passwordField = new PasswordField();
+    passwordField.setText("");
+    midtop.getChildren().addAll(passwdLbl, passwordField);
 
-    midbot = new HBox();
+    HBox midbot = new HBox();
     midbot.setSpacing(7);
     midbot.setPadding(new Insets(10, 10, 10, 10));
-    Label save_lbl = new Label("Save As");
-    TextField save_file = new TextField();
-    midbot.getChildren().addAll(save_lbl, save_file);
+    Label saveLbl = new Label("Save As");
+    TextField saveFile = new TextField();
+    midbot.getChildren().addAll(saveLbl, saveFile);
 
     // handles saving encrypted file
-    bottom = new HBox();
+    HBox bottom = new HBox();
     bottom.setSpacing(7);
     bottom.setPadding(new Insets(10, 10, 10, 10));
     Button encrypt = new Button();
     encrypt.setText("Encrypt");
     encrypt.setOnAction(
-        e -> model.encrypt(file_name.getText(), password_field.getText(), save_file.getText()));
+        e ->
+            model.crypt(fileName.getText(), passwordField.getText(), saveFile.getText(), (byte) 0));
     Button decrypt = new Button();
     decrypt.setText("Decrypt");
     decrypt.setOnAction(
-        e -> model.decrypt(file_name.getText(), password_field.getText(), save_file.getText()));
+        e ->
+            model.crypt(fileName.getText(), passwordField.getText(), saveFile.getText(), (byte) 1));
+    Button lFreq = new Button();
+    lFreq.setText("Cipher Analysis");
+    lFreq.setOnAction(
+        e -> {
+          ExtendedView ev = new ExtendedView(primaryStage, model, this.status);
+          ev.showOptions();
+        });
     GridPane cryption = new GridPane();
+    cryption.setHgap(10);
     cryption.addColumn(0, encrypt);
     cryption.addColumn(1, decrypt);
+    cryption.addColumn(2, lFreq);
     bottom.getChildren().add(cryption);
 
-    HBox status_box = new HBox();
-    status_box.setSpacing(7);
-    status_box.setPadding(new Insets(10, 10, 10, 10));
+    HBox statusBox = new HBox();
+    statusBox.setSpacing(7);
+    statusBox.setPadding(new Insets(10, 10, 10, 10));
     status = new Label(this.model.getStatus());
-    status_box.getChildren().add(status);
+    statusBox.getChildren().add(status);
 
-    GridPane window_layout = new GridPane();
-    window_layout.addRow(0, top);
-    window_layout.addRow(1, midtop);
-    window_layout.addRow(2, midbot);
-    window_layout.addRow(3, bottom);
-    window_layout.addRow(4, status_box);
+    GridPane windowLayout = new GridPane();
+    windowLayout.addRow(0, top);
+    windowLayout.addRow(1, midtop);
+    windowLayout.addRow(2, midbot);
+    windowLayout.addRow(3, bottom);
+    windowLayout.addRow(4, statusBox);
 
     primaryStage.setTitle("Homework 5");
-    primaryStage.setScene(new Scene(window_layout, 400, 250));
+    primaryStage.setScene(new Scene(windowLayout, 400, 250));
     primaryStage.show();
   }
 
-  public void init() throws Exception {
+  public void init() {
     Logger.getAnonymousLogger().info("inti: Initialize and connect to model!");
     model = new EncryptionModel();
     model.addObserver(this);
