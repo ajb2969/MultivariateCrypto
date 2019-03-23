@@ -1,7 +1,14 @@
+package view;
+
+import java.util.logging.Logger;
+import model.EncryptionModel;
+import model.LetterFrequency;
+import model.Percentage;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -27,15 +34,13 @@ public class ExtendedView {
   private static final String LETTERFREQ = "openLetterFreq";
   private static final String CIPHERCHANGE = "cipherChanges";
   private static final String PASSCHANGE = "passwordChanges";
-  private Label status;
 
-  ExtendedView(Stage s, EncryptionModel model, Label status) {
+  ExtendedView(Stage s, EncryptionModel model) {
     this.s = s;
     this.model = model;
-    this.status = status;
   }
 
-  public void letterFrequency(String fileName, String passwordField) {
+  private void letterFrequency(TreeSet<LetterFrequency> freq) {
     s.setTitle("Letter Frequencies");
     final CategoryAxis xAxis = new CategoryAxis();
     xAxis.setLabel("Letter");
@@ -43,7 +48,6 @@ public class ExtendedView {
     yAxis.setLabel("Frequency");
     final BarChart<String, Number> bc = new BarChart<>(xAxis, yAxis);
     XYChart.Series plaintext = new XYChart.Series();
-    TreeSet<LetterFrequency> freq = model.openLetterFreq(fileName, passwordField);
     plaintext.setName("Plaintext");
     Iterator<LetterFrequency> lfreq = freq.iterator();
     while (lfreq.hasNext()) {
@@ -66,7 +70,13 @@ public class ExtendedView {
     Scene scene = new Scene(bc, 800, 600);
     bc.getData().addAll(plaintext, ciphertext);
     s.setScene(scene);
-    s.showAndWait();
+  }
+
+  private void multipleResults(List<TreeSet<Percentage>> results) {
+
+    if(results.isEmpty()) {
+
+    }
   }
 
   public void showOptions() {
@@ -138,11 +148,17 @@ public class ExtendedView {
           try {
             if (!passwordField.getText().equals("") && !fileName.getText().equals("")) {
               Method m = model.getClass().getMethod(method, String.class, String.class);
-              Object o = m.invoke(model, passwordField.getText(), fileName.getText());
-              System.out.println();
+              Object o = m.invoke(model, fileName.getText(), passwordField.getText());
+              if (o instanceof TreeSet) {
+                letterFrequency((TreeSet<LetterFrequency>) o);
+              }
+
+              if (o instanceof List) {
+                multipleResults((List<TreeSet<Percentage>>) o);
+              }
             }
           } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e1) {
-            e1.printStackTrace();
+            Logger.getAnonymousLogger().severe(e1.getMessage());
           }
         });
     low.getChildren().add(start);

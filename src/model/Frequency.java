@@ -1,3 +1,5 @@
+package model;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,33 +53,5 @@ class Frequency {
     }
     Collections.sort(frequencyArrayList);
     return frequencyArrayList;
-  }
-}
-
-class LetterFrequency implements Comparable<LetterFrequency>{
-  private Character c;
-  private int freq1, freq2;
-
-  public LetterFrequency(Character c, int freq1, int freq2) {
-    this.c = c;
-    this.freq1 = freq1;
-    this.freq2 = freq2;
-  }
-
-  public Character getC() {
-    return c;
-  }
-
-  public int getFreq1() {
-    return freq1;
-  }
-
-  public int getFreq2() {
-    return freq2;
-  }
-
-  @Override
-  public int compareTo(LetterFrequency o) {
-    return o.getC() < this.getC() ? 1 : o.getC() > this.getC() ? -1 : 0;
   }
 }

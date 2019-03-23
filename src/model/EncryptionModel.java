@@ -1,3 +1,5 @@
+package model;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -5,19 +7,21 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-class EncryptionModel extends Observable {
+public class EncryptionModel extends Observable {
   private String status;
   private static final String ERRORMSG = "Error: %s, %s is too big. ";
 
-  EncryptionModel() {
+  public EncryptionModel() {
     this.status = "";
   }
 
-  void crypt(String selectedFile, String password, String saveFile, byte flag) {
+  public void crypt(String selectedFile, String password, String saveFile, byte flag) {
     if (saveFile.equals("")) {
       this.status = "A save file name must be entered";
       announce(null);
@@ -42,8 +46,8 @@ class EncryptionModel extends Observable {
         IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
         byte[] afterl2 = l2.convertAndMultiply(fileBytes);
         CentralMap cm = new CentralMap(password.getBytes(), afterl2);
-        byte [] ciphertext;
-        if(flag == 0) {
+        byte[] ciphertext;
+        if (flag == 0) {
           ciphertext = l1.convertAndMultiply(cm.encrypt());
         } else {
           ciphertext = l1.convertAndMultiply(cm.decrypt());
@@ -64,8 +68,6 @@ class EncryptionModel extends Observable {
   }
 
   public TreeSet<LetterFrequency> openLetterFreq(String selectedFile, String password) {
-    System.out.println("Called letter frequency");
-    /*
      try {
        byte[] file = Files.readAllBytes(Paths.get(selectedFile));
        short[] fileBytes = new short[file.length];
@@ -88,21 +90,44 @@ class EncryptionModel extends Observable {
        this.status = String.format(ERRORMSG, e.getCause(), e.getMessage());
        announce(null);
      }
-    */
+
     return new TreeSet<>();
   }
 
-  public TreeSet<Percentage> cipherChanges(String selectedFile, String password) {
-    System.out.println("Called cipherChanges");
-    return new TreeSet<>();
+  public List<TreeSet<Percentage>> cipherChanges(String selectedFile, String password) {
+    try {
+      byte[] file = Files.readAllBytes(Paths.get(selectedFile));
+      short[] fileBytes = new short[file.length];
+      for (int i = 0; i < file.length; i++) {
+        fileBytes[i] = file[i];
+      }
+      IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
+      IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
+      byte[] afterl1 = l1.convertAndMultiply(fileBytes);
+      CentralMap cm = new CentralMap(password.getBytes(), afterl1);
+      byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
+
+      Percentage p = new Percentage();
+      byte[]
+
+    } catch (NoSuchFileException e) {
+      this.status = String.format("Error: %s does not exist", e.getFile());
+      announce(null);
+    } catch (IOException e) {
+      Logger.getAnonymousLogger().severe(e.getMessage());
+    } catch (OutOfMemoryError e) {
+      this.status = String.format(ERRORMSG, e.getCause(), e.getMessage());
+      announce(null);
+    }
+    return new ArrayList<>(new TreeSet<>());
   }
 
-  public TreeSet<Percentage> passwordChanges(String selectedFile, String password) {
-    System.out.println("Called passwordChanges");
-    return new TreeSet<>();
+  public List<TreeSet<Percentage>> passwordChanges(String selectedFile, String password) {
+
+    return new ArrayList<>(new TreeSet<>());
   }
 
-  String getStatus() {
+  public String getStatus() {
     return this.status;
   }
 

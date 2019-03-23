@@ -1,3 +1,5 @@
+package model;
+
 public class CentralMap {
 
   private short[] password;
