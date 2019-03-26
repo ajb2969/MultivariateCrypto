@@ -1,5 +1,11 @@
 package model;
 
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -7,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -88,7 +95,6 @@ public class EncryptionModel extends Observable {
             this.status = String.format(ERRORMSG, e.getCause(), e.getMessage());
             announce(null);
         }
-
         return new TreeSet<>();
     }
 
@@ -99,14 +105,65 @@ public class EncryptionModel extends Observable {
             for (int i = 0; i < file.length; i++) {
                 fileBytes[i] = file[i];
             }
-            IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
-            IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
-            byte[] afterl1 = l1.convertAndMultiply(fileBytes);
-            CentralMap cm = new CentralMap(password.getBytes(), afterl1);
-            byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
 
-            
+            ArrayList<GridPaneData> data = new ArrayList<>();
+            Percentage five = new Percentage(fileBytes, (float) 0.05);
+            for(int i =1; i< 6;i++) {
+                int passwordLen = 3 * i;
+                while(password.length() < passwordLen) {
+                    password = password.concat(password);
+                }
+                password = password.substring(0, passwordLen);
+                IdentityMatrix l1 = new IdentityMatrix(five.getText().length);
+                IdentityMatrix l2 = new IdentityMatrix(five.getText().length);
+                byte[] afterl1 = l1.convertAndMultiply(five.getText());
+                CentralMap cm = new CentralMap(password.getBytes(), afterl1);
+                byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
+                data.add(new GridPaneData(five.getPercent(), password.length(), five.getDiff(ciphertext)));
+            }
 
+            Percentage ten = new Percentage(fileBytes, (float) 0.1);
+            for(int i =1; i< 6;i++) {
+                int passwordLen = 3 * i;
+                while(password.length() < passwordLen) {
+                    password = password.concat(password);
+                }
+                password = password.substring(0, passwordLen);
+                IdentityMatrix l1 = new IdentityMatrix(ten.getText().length);
+                IdentityMatrix l2 = new IdentityMatrix(ten.getText().length);
+                byte[] afterl1 = l1.convertAndMultiply(ten.getText());
+                CentralMap cm = new CentralMap(password.getBytes(), afterl1);
+                byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
+                data.add(new GridPaneData(ten.getPercent(), password.length(), ten.getDiff(ciphertext)));
+            }
+
+            GridPane gp = new GridPane();
+            gp.setVgap(20);
+            gp.setPadding(new Insets(10,10,10,10));
+            Label l1 = new Label("Percent of plaintext changed");
+            l1.setPadding(new Insets(10,10,10,10));
+            Label l2 = new Label("Length of password");
+            l2.setPadding(new Insets(10,10,10,10));
+            Label l3 = new Label("Percent of ciphertext changed");
+            l3.setPadding(new Insets(10,10,10,10));
+            gp.add(l1,0, 0);
+
+            gp.add(l2,1, 0);
+            gp.add(l3,2, 0);
+
+            int row = 1;
+            for(GridPaneData gpd: data) {
+                gp.add(new Label(String.valueOf(gpd.getPercent())),0, row);
+                gp.add(new Label(String.valueOf(gpd.getPassLength())),1, row);
+                gp.add(new Label(String.valueOf(gpd.getDiff())),2, row);
+                row +=1;
+            }
+
+            Scene s = new Scene(gp);
+            Stage stage = new Stage();
+            stage.setTitle("Ciphertext changes");
+            stage.setScene(s);
+            stage.show();
 
         } catch (NoSuchFileException e) {
             this.status = String.format("Error: %s does not exist", e.getFile());
@@ -159,5 +216,29 @@ public class EncryptionModel extends Observable {
     public void announce(String arg) {
         setChanged();
         notifyObservers(arg);
+    }
+}
+
+class GridPaneData {
+    private float percent;
+    private int passLength;
+    private float diff;
+    public GridPaneData(float percent, int length, float diff) {
+        this.percent = percent;
+        this.passLength = length;
+        this.diff = diff;
+    }
+
+
+    public float getDiff() {
+        return diff;
+    }
+
+    public int getPassLength() {
+        return passLength;
+    }
+
+    public float getPercent() {
+        return percent;
     }
 }
