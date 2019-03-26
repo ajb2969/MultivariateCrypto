@@ -152,10 +152,6 @@ public class ExtendedView {
               if (o instanceof TreeSet) {
                 letterFrequency((TreeSet<LetterFrequency>) o);
               }
-
-              if (o instanceof List) {
-                multipleResults((List<TreeSet<Percentage>>) o);
-              }
             }
           } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e1) {
             Logger.getAnonymousLogger().severe(e1.getMessage());

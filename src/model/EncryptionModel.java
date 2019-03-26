@@ -94,7 +94,7 @@ public class EncryptionModel extends Observable {
     return new TreeSet<>();
   }
 
-  public List<TreeSet<Percentage>> cipherChanges(String selectedFile, String password) {
+  public void cipherChanges(String selectedFile, String password) {
     try {
       byte[] file = Files.readAllBytes(Paths.get(selectedFile));
       short[] fileBytes = new short[file.length];
@@ -108,7 +108,7 @@ public class EncryptionModel extends Observable {
       byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
 
       Percentage p = new Percentage();
-      byte[]
+
 
     } catch (NoSuchFileException e) {
       this.status = String.format("Error: %s does not exist", e.getFile());
@@ -119,12 +119,12 @@ public class EncryptionModel extends Observable {
       this.status = String.format(ERRORMSG, e.getCause(), e.getMessage());
       announce(null);
     }
-    return new ArrayList<>(new TreeSet<>());
+
   }
 
-  public List<TreeSet<Percentage>> passwordChanges(String selectedFile, String password) {
+  public void passwordChanges(String selectedFile, String password) {
 
-    return new ArrayList<>(new TreeSet<>());
+
   }
 
   public String getStatus() {
