@@ -15,6 +15,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Observable;
+import java.util.Random;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
@@ -185,12 +186,84 @@ public class EncryptionModel extends Observable {
             for (int i = 0; i < file.length; i++) {
                 fileBytes[i] = file[i];
             }
-            IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
-            IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
-            byte[] afterl1 = l1.convertAndMultiply(fileBytes);
-            CentralMap cm = new CentralMap(password.getBytes(), afterl1);
-            byte[] ciphertext = l2.convertAndMultiply(cm.encrypt());
 
+
+
+            //generate password for each iteratation of 1-3 change passwords
+            ArrayList<GridPaneData> passChanges = new ArrayList<>();
+            for(int i = 1; i < 6; i++) {
+                Random r = new Random();
+                r.setSeed(31 + i);
+                int passwordLen = 3 * i;
+                while(password.length() < passwordLen) {
+                    password = password.concat(password);
+                }
+                password = password.substring(0, passwordLen);
+
+
+                //create some length password
+                IdentityMatrix l1 = new IdentityMatrix(fileBytes.length);
+                IdentityMatrix l2 = new IdentityMatrix(fileBytes.length);
+                byte[] afterl1 = l1.convertAndMultiply(fileBytes);
+                CentralMap cm = new CentralMap(password.getBytes(), afterl1);
+                byte[] oriCiphertext = l2.convertAndMultiply(cm.encrypt());
+                short [] transfer = new short[oriCiphertext.length];
+                for(int j = 0; j < oriCiphertext.length; j++) {
+                    transfer[j] = oriCiphertext[j];
+                }
+                //determine ciphertext with original password
+                Percentage p = new Percentage(transfer, (float)0);
+                StringBuilder changes = new StringBuilder(password);
+                for(int j = 1; j < 4; j++) {
+                    int counter = 0;
+                    int index = 0;
+                    while(counter != j) {
+                        if(r.nextBoolean()) {
+                            changes.setCharAt(index, (char) r.nextInt(127));
+                            counter+=1;
+                        }
+
+                        if(index == password.length()) {
+                            index = 0;
+                        } else {
+                            index+=1;
+                        }
+                    }
+
+                    byte[] al1 = l1.convertAndMultiply(fileBytes);
+                    CentralMap revCm = new CentralMap(changes.toString().getBytes(), al1);
+                    byte[] newCiphertext = l2.convertAndMultiply(revCm.encrypt());
+                    passChanges.add(new GridPaneData(j, changes.length(), p.getDiff(newCiphertext)));
+                    changes = new StringBuilder(password);
+                }
+            }
+
+            GridPane gp = new GridPane();
+            gp.setVgap(20);
+            gp.setPadding(new Insets(10,10,10,10));
+            Label l1 = new Label("Length of Password changed");
+            l1.setPadding(new Insets(10,10,10,10));
+            Label l2 = new Label("Number of characters changed");
+            l2.setPadding(new Insets(10,10,10,10));
+            Label l3 = new Label("Percent of ciphertext changed");
+            l3.setPadding(new Insets(10,10,10,10));
+            gp.add(l1,0, 0);
+            gp.add(l2,1, 0);
+            gp.add(l3,2, 0);
+
+            int row = 1;
+            for(GridPaneData gpd: passChanges) {
+                gp.add(new Label(String.valueOf(gpd.getPassLength())),0, row);
+                gp.add(new Label(String.valueOf(gpd.getPercent())),1, row);
+                gp.add(new Label(String.valueOf(gpd.getDiff())),2, row);
+                row +=1;
+            }
+
+            Scene s = new Scene(gp);
+            Stage stage = new Stage();
+            stage.setTitle("Password changes");
+            stage.setScene(s);
+            stage.show();
 
         } catch (IOException e) {
             e.printStackTrace();
